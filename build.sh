@@ -2,14 +2,13 @@
 # Builds the signed apt repository for the .deb files in pool/main into the directory given as $1.
 # Signs with the default secret key of the running gpg.
 set -euo pipefail
-shopt -s nullglob
 
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 site="$(realpath --canonicalize-missing "${1:?usage: build.sh OUTPUT_DIRECTORY}")"
 
 rm -rf "$site"
 mkdir -p "$site/pool/main" "$site/dists/stable/main/binary-all"
-cp "$repository_root"/pool/main/*.deb "$site/pool/main/" || true
+find "$repository_root/pool/main" -name '*.deb' -exec cp {} "$site/pool/main/" \;
 cp "$repository_root/key.asc" "$site/key.asc"
 
 cd "$site"
