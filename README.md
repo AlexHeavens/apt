@@ -1,5 +1,3 @@
-*Claude Code authored*
-
 # Alex's apt repository
 
 Personal Debian packages, signed and served from GitHub Pages at https://alexheavens.github.io/apt.
