@@ -1,34 +1,50 @@
 name: publish
+
 on:
   push:
-    branches: [main]
+  pull_request:
   workflow_dispatch:
+
 permissions:
   contents: read
-  pages: write
-  id-token: write
+
+# Deploys to Pages must not overlap, and a running deploy must not be cancelled.
 concurrency:
-  group: pages
+  group: publish-${{ github.ref }}
   cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: sudo apt-get install --yes apt-utils
-      - run: gpg --batch --import <<<"$GPG_PRIVATE_KEY"
+      # Only main is deployed, so only main holds the real signing key. Other
+      # refs (and Dependabot, which gets no secrets) sign with a throwaway key.
+      - name: Import the signing key
+        if: github.ref == 'refs/heads/main'
+        run: gpg --batch --import <<<"$GPG_PRIVATE_KEY"
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      - name: Create a throwaway signing key
+        if: github.ref != 'refs/heads/main'
+        run: gpg --batch --passphrase '' --quick-generate-key ci@example.invalid
       - run: ./build.sh site
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: site
   deploy:
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
