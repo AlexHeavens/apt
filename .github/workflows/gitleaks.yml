@@ -28,4 +28,4 @@ jobs:
         run: ./scripts/install-gitleaks.sh "$RUNNER_TEMP/bin"
 
       - name: Scan the history
-        run: "$RUNNER_TEMP/bin/gitleaks" git --redact --no-banner
+        run: '"$RUNNER_TEMP/bin/gitleaks" git --redact --no-banner'
