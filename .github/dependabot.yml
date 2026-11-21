@@ -4,3 +4,13 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    assignees:
+      - AlexHeavens
+  # pins/gitleaks/Dockerfile only records a release tag; Dependabot bumps it.
+  - package-ecosystem: docker
+    directories:
+      - /pins/*
+    schedule:
+      interval: weekly
+    assignees:
+      - AlexHeavens
